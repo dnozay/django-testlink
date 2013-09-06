@@ -40,7 +40,6 @@ admin.site.register(RoleRights)
 admin.site.register(Roles)
 admin.site.register(TcasesActive)
 admin.site.register(Tcsteps)
-admin.site.register(Tcversions)
 admin.site.register(TcversionsLastActive)
 admin.site.register(TcversionsLastActiveBareBones)
 admin.site.register(TestcaseKeywords)
@@ -58,3 +57,8 @@ admin.site.register(UserGroupAssign)
 admin.site.register(UserTestplanRoles)
 admin.site.register(UserTestprojectRoles)
 admin.site.register(Users)
+
+class TestcaseAdmin(admin.ModelAdmin):
+    list_display = ('id', 'tc_external_id', 'version')
+
+admin.site.register(Testcase, TestcaseAdmin)
