@@ -71,7 +71,7 @@ class CfieldExecutionValues(models.Model):
 
 class CfieldNodeTypes(models.Model):
     field_id = models.IntegerField()
-    node_type_id = models.IntegerField()
+    node_type = models.ForeignKey('NodeType', db_column='node_type_id')
     class Meta:
         db_table = 'cfield_node_types'
 
@@ -212,7 +212,7 @@ class Milestones(models.Model):
     class Meta:
         db_table = 'milestones'
 
-class NodeTypes(models.Model):
+class NodeType(models.Model):
     id = models.IntegerField(primary_key=True)
     description = models.CharField(max_length=100L)
     class Meta:
@@ -222,7 +222,7 @@ class NodesHierarchy(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100L, blank=True)
     parent_id = models.IntegerField(null=True, blank=True)
-    node_type_id = models.IntegerField()
+    node_type = models.ForeignKey('NodeType', db_column='node_type_id')
     node_order = models.IntegerField(null=True, blank=True)
     class Meta:
         db_table = 'nodes_hierarchy'

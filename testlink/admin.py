@@ -22,7 +22,6 @@ admin.site.register(Keywords)
 admin.site.register(LastExecutions)
 admin.site.register(LastExecutionsByPlatform)
 admin.site.register(Milestones)
-admin.site.register(NodeTypes)
 admin.site.register(NodesHierarchy)
 admin.site.register(ObjectKeywords)
 admin.site.register(Platforms)
@@ -62,3 +61,8 @@ class TestcaseAdmin(admin.ModelAdmin):
     list_display = ('id', 'tc_external_id', 'version')
 
 admin.site.register(Testcase, TestcaseAdmin)
+
+class NodeTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'description')
+
+admin.site.register(NodeType, NodeTypeAdmin)
