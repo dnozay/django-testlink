@@ -22,7 +22,6 @@ admin.site.register(Keywords)
 admin.site.register(LastExecutions)
 admin.site.register(LastExecutionsByPlatform)
 admin.site.register(Milestones)
-admin.site.register(NodesHierarchy)
 admin.site.register(ObjectKeywords)
 admin.site.register(Platforms)
 admin.site.register(ReqCoverage)
@@ -66,3 +65,10 @@ class NodeTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'description')
 
 admin.site.register(NodeType, NodeTypeAdmin)
+
+class NodesHierarchyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'description', 'name')
+    def description(self, obj):
+        return obj.node_type.description
+
+admin.site.register(NodesHierarchy, NodesHierarchyAdmin)

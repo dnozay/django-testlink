@@ -225,6 +225,8 @@ class NodesHierarchy(models.Model):
     node_type = models.ForeignKey('NodeType', db_column='node_type_id')
     node_order = models.IntegerField(null=True, blank=True)
     class Meta:
+        verbose_name = 'nodes hierarchy'
+        verbose_name_plural = 'nodes hierarchy'
         db_table = 'nodes_hierarchy'
 
 class ObjectKeywords(models.Model):
