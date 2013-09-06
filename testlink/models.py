@@ -182,19 +182,21 @@ class Keywords(models.Model):
         db_table = 'keywords'
 
 class LastExecutions(models.Model):
+    id = models.IntegerField(primary_key=True)
+    # id = models.IntegerField(null=True, blank=True)
     tcversion_id = models.IntegerField()
     testplan_id = models.IntegerField()
     platform_id = models.IntegerField()
     build_id = models.IntegerField()
-    id = models.IntegerField(null=True, blank=True)
     class Meta:
         db_table = 'last_executions'
 
 class LastExecutionsByPlatform(models.Model):
+    id = models.IntegerField(primary_key=True)
+    # id = models.IntegerField(null=True, blank=True)
     tcversion_id = models.IntegerField()
     testplan_id = models.IntegerField()
     platform_id = models.IntegerField()
-    id = models.IntegerField(null=True, blank=True)
     class Meta:
         db_table = 'last_executions_by_platform'
 
@@ -399,7 +401,8 @@ class Tcversions(models.Model):
         db_table = 'tcversions'
 
 class TcversionsLastActive(models.Model):
-    id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+    # id = models.IntegerField()
     tc_external_id = models.IntegerField(null=True, blank=True)
     version = models.IntegerField()
     layout = models.IntegerField()
