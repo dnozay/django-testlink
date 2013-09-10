@@ -373,9 +373,9 @@ class Testcase(models.Model):
     summary = models.TextField(blank=True)
     preconditions = models.TextField(blank=True)
     importance = models.IntegerField()
-    author = models.ForeignKey('Users', db_column='author_id', related_name='authored_testcase_set')
+    author = models.ForeignKey('User', db_column='author_id', related_name='authored_testcase_set')
     creation_ts = models.DateTimeField()
-    updater = models.ForeignKey('Users', db_column='updater_id', related_name='updated_testcase_set')
+    updater = models.ForeignKey('User', db_column='updater_id', related_name='updated_testcase_set')
     modification_ts = models.DateTimeField()
     active = models.IntegerField()
     is_open = models.IntegerField()
@@ -511,12 +511,12 @@ class UserGroup(models.Model):
         db_table = 'user_group'
 
 class UserGroupAssign(models.Model):
-    usergroup_id = models.IntegerField()
-    user_id = models.IntegerField()
+    usergroup = models.ForeignKey('UserGroup', db_column='usergroup_id')
+    user = models.ForeignKey('User', db_column='user_id')
     class Meta:
         db_table = 'user_group_assign'
 
-class Users(models.Model):
+class User(models.Model):
     id = models.IntegerField(primary_key=True)
     login = models.CharField(max_length=30L, unique=True)
     password = models.CharField(max_length=32L)
@@ -526,9 +526,11 @@ class Users(models.Model):
     last = models.CharField(max_length=30L)
     locale = models.CharField(max_length=10L)
     default_testproject_id = models.IntegerField(null=True, blank=True)
-    active = models.IntegerField()
+    # active = models.IntegerField()
+    active = models.BooleanField()
     script_key = models.CharField(max_length=32L, blank=True)
     cookie_string = models.CharField(max_length=64L, unique=True)
+    groups = models.ManyToManyField('UserGroup', through='UserGroupAssign')
     class Meta:
         db_table = 'users'
 
@@ -561,7 +563,7 @@ class RoleRights(models.Model):
         db_table = 'role_rights'
 
 class UserTestplanRoles(models.Model):
-    user = models.ForeignKey('Users', db_column='user_id')
+    user = models.ForeignKey('User', db_column='user_id')
     testplan = models.ForeignKey('Testplans', db_column='testplan_id')
     role = models.ForeignKey('Role', db_column='role_id')
     class Meta:
@@ -571,7 +573,7 @@ class UserTestplanRoles(models.Model):
         db_table = 'user_testplan_roles'
 
 class UserTestprojectRoles(models.Model):
-    user = models.ForeignKey('Users', db_column='user_id')
+    user = models.ForeignKey('User', db_column='user_id')
     testplan = models.ForeignKey('Testprojects', db_column='testproject_id')
     role = models.ForeignKey('Role', db_column='role_id')
     class Meta:

@@ -1,5 +1,6 @@
 
 from django.contrib import admin
+from django import forms
 from .models import *
 
 admin.site.register(AssignmentStatus)
@@ -47,11 +48,6 @@ admin.site.register(Testprojects)
 admin.site.register(Testsuites)
 admin.site.register(Transactions)
 admin.site.register(UserAssignments)
-admin.site.register(UserGroup)
-admin.site.register(UserGroupAssign)
-admin.site.register(UserTestplanRoles)
-admin.site.register(UserTestprojectRoles)
-admin.site.register(Users)
 
 class TestcaseAdmin(admin.ModelAdmin):
     list_display = ('id', 'tc_external_id', 'version')
@@ -75,4 +71,29 @@ admin.site.register(NodesHierarchy, NodesHierarchyAdmin)
 admin.site.register(RoleRights)
 admin.site.register(Right)
 admin.site.register(Role)
+admin.site.register(UserTestplanRoles)
+admin.site.register(UserTestprojectRoles)
+
+# Users and groups
+class UserGroupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'description')
+
+class UserGroupAssignInlineForm(forms.ModelForm):
+    auto_id = False
+    exclude = ('id',)
+    class Meta:
+        model = User.groups.through
+
+class UserGroupAssignInline(admin.TabularInline):
+    model = User.groups.through
+    form = UserGroupAssignInlineForm
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'login', 'email', 'active')
+    inlines = [UserGroupAssignInline,]
+
+
+admin.site.register(UserGroup, UserGroupAdmin)
+admin.site.register(User, UserAdmin)
+
 
