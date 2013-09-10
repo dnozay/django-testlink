@@ -49,10 +49,10 @@ admin.site.register(Testsuites)
 admin.site.register(Transactions)
 admin.site.register(UserAssignments)
 
-class TestcaseAdmin(admin.ModelAdmin):
+class TcversionAdmin(admin.ModelAdmin):
     list_display = ('id', 'tc_external_id', 'version')
 
-admin.site.register(Testcase, TestcaseAdmin)
+admin.site.register(Tcversion, TcversionAdmin)
 
 class NodeTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'description')

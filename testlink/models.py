@@ -64,7 +64,7 @@ class CfieldExecutionValues(models.Model):
     field_id = models.IntegerField()
     execution_id = models.IntegerField()
     testplan_id = models.IntegerField()
-    testcase = models.ForeignKey('Testcase', db_column='tcversion_id')
+    tcversion = models.ForeignKey('Tcversion', db_column='tcversion_id')
     value = models.CharField(max_length=4000L)
     class Meta:
         db_table = 'cfield_execution_values'
@@ -145,7 +145,7 @@ class Executions(models.Model):
     execution_ts = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=1L, blank=True)
     testplan_id = models.IntegerField()
-    testcase = models.ForeignKey('Testcase', db_column='tcversion_id')
+    tcversion = models.ForeignKey('Tcversion', db_column='tcversion_id')
     tcversion_number = models.IntegerField()
     platform_id = models.IntegerField()
     execution_type = models.IntegerField()
@@ -184,7 +184,7 @@ class Keywords(models.Model):
 class LastExecutions(models.Model):
     id = models.IntegerField(primary_key=True)
     # id = models.IntegerField(null=True, blank=True)
-    testcase = models.ForeignKey('Testcase', db_column='tcversion_id')
+    tcversion = models.ForeignKey('Tcversion', db_column='tcversion_id')
     testplan_id = models.IntegerField()
     platform_id = models.IntegerField()
     build_id = models.IntegerField()
@@ -194,7 +194,7 @@ class LastExecutions(models.Model):
 class LastExecutionsByPlatform(models.Model):
     id = models.IntegerField(primary_key=True)
     # id = models.IntegerField(null=True, blank=True)
-    testcase = models.ForeignKey('Testcase', db_column='tcversion_id')
+    tcversion = models.ForeignKey('Tcversion', db_column='tcversion_id')
     testplan_id = models.IntegerField()
     platform_id = models.IntegerField()
     class Meta:
@@ -370,7 +370,7 @@ class TcversionsLastActive(models.Model):
 
 class TcversionsLastActiveBareBones(models.Model):
     tcase_id = models.IntegerField(null=True, blank=True)
-    testcase = models.ForeignKey('Testcase', db_column='tcversion_id')
+    tcversion = models.ForeignKey('Tcversion', db_column='tcversion_id')
     class Meta:
         db_table = 'tcversions_last_active_bare_bones'
 
@@ -390,7 +390,7 @@ class TestplanPlatforms(models.Model):
 class TestplanTcversions(models.Model):
     id = models.IntegerField(primary_key=True)
     testplan_id = models.IntegerField()
-    testcase = models.ForeignKey('Testcase', db_column='tcversion_id')
+    tcversion = models.ForeignKey('Tcversion', db_column='tcversion_id')
     node_order = models.IntegerField()
     urgency = models.IntegerField()
     platform_id = models.IntegerField()
@@ -494,7 +494,7 @@ class Testsuites(models.Model):
     class Meta:
         db_table = 'testsuites'
 
-class Testcase(models.Model):
+class Tcversion(models.Model):
     id = models.OneToOneField('NodesHierarchy',
         parent_link=True, primary_key=True, db_column='id')
     tc_external_id = models.IntegerField(null=True, blank=True)
