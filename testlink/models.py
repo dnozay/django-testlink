@@ -339,12 +339,6 @@ class Requirements(models.Model):
     class Meta:
         db_table = 'requirements'
 
-class Rights(models.Model):
-    id = models.IntegerField(primary_key=True)
-    description = models.CharField(max_length=100L, unique=True)
-    class Meta:
-        db_table = 'rights'
-
 class RiskAssignments(models.Model):
     id = models.IntegerField(primary_key=True)
     testplan_id = models.IntegerField()
@@ -353,19 +347,6 @@ class RiskAssignments(models.Model):
     importance = models.CharField(max_length=1L)
     class Meta:
         db_table = 'risk_assignments'
-
-class RoleRights(models.Model):
-    role_id = models.IntegerField()
-    right_id = models.IntegerField()
-    class Meta:
-        db_table = 'role_rights'
-
-class Roles(models.Model):
-    id = models.IntegerField(primary_key=True)
-    description = models.CharField(max_length=100L, unique=True)
-    notes = models.TextField(blank=True)
-    class Meta:
-        db_table = 'roles'
 
 class TcasesActive(models.Model):
     tcase_id = models.IntegerField(null=True, blank=True)
@@ -535,20 +516,6 @@ class UserGroupAssign(models.Model):
     class Meta:
         db_table = 'user_group_assign'
 
-class UserTestplanRoles(models.Model):
-    user_id = models.IntegerField()
-    testplan_id = models.IntegerField()
-    role_id = models.IntegerField()
-    class Meta:
-        db_table = 'user_testplan_roles'
-
-class UserTestprojectRoles(models.Model):
-    user_id = models.IntegerField()
-    testproject_id = models.IntegerField()
-    role_id = models.IntegerField()
-    class Meta:
-        db_table = 'user_testproject_roles'
-
 class Users(models.Model):
     id = models.IntegerField(primary_key=True)
     login = models.CharField(max_length=30L, unique=True)
@@ -564,4 +531,52 @@ class Users(models.Model):
     cookie_string = models.CharField(max_length=64L, unique=True)
     class Meta:
         db_table = 'users'
+
+
+#
+# Roles and Rights
+#
+class Role(models.Model):
+    id = models.IntegerField(primary_key=True)
+    description = models.CharField(max_length=100L, unique=True)
+    notes = models.TextField(blank=True)
+    class Meta:
+        app_label = 'roles'
+        db_table = 'roles'
+
+class Right(models.Model):
+    id = models.IntegerField(primary_key=True)
+    description = models.CharField(max_length=100L, unique=True)
+    class Meta:
+        app_label = 'roles'
+        db_table = 'rights'
+
+class RoleRights(models.Model):
+    role = models.ForeignKey('Role', db_column='role_id')
+    right = models.ForeignKey('Right', db_column='right_id')
+    class Meta:
+        app_label = 'roles'
+        verbose_name = 'right for a role'
+        verbose_name_plural = 'rights for roles'
+        db_table = 'role_rights'
+
+class UserTestplanRoles(models.Model):
+    user = models.ForeignKey('Users', db_column='user_id')
+    testplan = models.ForeignKey('Testplans', db_column='testplan_id')
+    role = models.ForeignKey('Role', db_column='role_id')
+    class Meta:
+        app_label = 'roles'
+        verbose_name = 'user role for a test plan'
+        verbose_name_plural = 'users roles for test plans'
+        db_table = 'user_testplan_roles'
+
+class UserTestprojectRoles(models.Model):
+    user = models.ForeignKey('Users', db_column='user_id')
+    testplan = models.ForeignKey('Testprojects', db_column='testproject_id')
+    role = models.ForeignKey('Role', db_column='role_id')
+    class Meta:
+        app_label = 'roles'
+        verbose_name = 'user role for a test project'
+        verbose_name_plural = 'users roles for test projects'
+        db_table = 'user_testproject_roles'
 

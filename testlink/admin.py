@@ -32,10 +32,7 @@ admin.site.register(ReqSpecsRevisions)
 admin.site.register(ReqVersions)
 admin.site.register(Reqmgrsystems)
 admin.site.register(Requirements)
-admin.site.register(Rights)
 admin.site.register(RiskAssignments)
-admin.site.register(RoleRights)
-admin.site.register(Roles)
 admin.site.register(TcasesActive)
 admin.site.register(Tcsteps)
 admin.site.register(TcversionsLastActive)
@@ -72,3 +69,10 @@ class NodesHierarchyAdmin(admin.ModelAdmin):
         return obj.node_type.description
 
 admin.site.register(NodesHierarchy, NodesHierarchyAdmin)
+
+
+# Roles and Rights
+admin.site.register(RoleRights)
+admin.site.register(Right)
+admin.site.register(Role)
+
