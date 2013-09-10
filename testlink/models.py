@@ -212,23 +212,6 @@ class Milestones(models.Model):
     class Meta:
         db_table = 'milestones'
 
-class NodeType(models.Model):
-    id = models.IntegerField(primary_key=True)
-    description = models.CharField(max_length=100L)
-    class Meta:
-        db_table = 'node_types'
-
-class NodesHierarchy(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=100L, blank=True)
-    parent_id = models.IntegerField(null=True, blank=True)
-    node_type = models.ForeignKey('NodeType', db_column='node_type_id')
-    node_order = models.IntegerField(null=True, blank=True)
-    class Meta:
-        verbose_name = 'nodes hierarchy'
-        verbose_name_plural = 'nodes hierarchy'
-        db_table = 'nodes_hierarchy'
-
 class ObjectKeywords(models.Model):
     id = models.IntegerField(primary_key=True)
     fk_id = models.IntegerField()
@@ -364,25 +347,6 @@ class Tcsteps(models.Model):
     class Meta:
         db_table = 'tcsteps'
 
-class Testcase(models.Model):
-    id = models.IntegerField(primary_key=True)
-    tc_external_id = models.IntegerField(null=True, blank=True)
-    version = models.IntegerField()
-    layout = models.IntegerField()
-    status = models.IntegerField()
-    summary = models.TextField(blank=True)
-    preconditions = models.TextField(blank=True)
-    importance = models.IntegerField()
-    author = models.ForeignKey('User', db_column='author_id', related_name='authored_testcase_set')
-    creation_ts = models.DateTimeField()
-    updater = models.ForeignKey('User', db_column='updater_id', related_name='updated_testcase_set')
-    modification_ts = models.DateTimeField()
-    active = models.IntegerField()
-    is_open = models.IntegerField()
-    execution_type = models.IntegerField()
-    class Meta:
-        db_table = 'tcversions'
-
 class TcversionsLastActive(models.Model):
     id = models.IntegerField(primary_key=True)
     # id = models.IntegerField()
@@ -435,16 +399,6 @@ class TestplanTcversions(models.Model):
     class Meta:
         db_table = 'testplan_tcversions'
 
-class Testplans(models.Model):
-    id = models.IntegerField(primary_key=True)
-    testproject_id = models.IntegerField()
-    notes = models.TextField(blank=True)
-    active = models.IntegerField()
-    is_open = models.IntegerField()
-    is_public = models.IntegerField()
-    class Meta:
-        db_table = 'testplans'
-
 class TestprojectIssuetracker(models.Model):
     testproject_id = models.IntegerField(primary_key=True)
     issuetracker_id = models.IntegerField()
@@ -456,29 +410,6 @@ class TestprojectReqmgrsystem(models.Model):
     reqmgrsystem_id = models.IntegerField()
     class Meta:
         db_table = 'testproject_reqmgrsystem'
-
-class Testprojects(models.Model):
-    id = models.IntegerField(primary_key=True)
-    notes = models.TextField(blank=True)
-    color = models.CharField(max_length=12L)
-    active = models.IntegerField()
-    option_reqs = models.IntegerField()
-    option_priority = models.IntegerField()
-    option_automation = models.IntegerField()
-    options = models.TextField(blank=True)
-    prefix = models.CharField(max_length=16L, unique=True)
-    tc_counter = models.IntegerField()
-    is_public = models.IntegerField()
-    issue_tracker_enabled = models.IntegerField()
-    reqmgr_integration_enabled = models.IntegerField()
-    class Meta:
-        db_table = 'testprojects'
-
-class Testsuites(models.Model):
-    id = models.IntegerField(primary_key=True)
-    details = models.TextField(blank=True)
-    class Meta:
-        db_table = 'testsuites'
 
 class Transactions(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -503,6 +434,90 @@ class UserAssignments(models.Model):
     class Meta:
         db_table = 'user_assignments'
 
+
+#
+# Nodes
+#
+class NodeType(models.Model):
+    id = models.IntegerField(primary_key=True)
+    description = models.CharField(max_length=100L)
+    class Meta:
+        db_table = 'node_types'
+
+class NodesHierarchy(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100L, blank=True)
+    parent_id = models.IntegerField(null=True, blank=True)
+    node_type = models.ForeignKey('NodeType', db_column='node_type_id')
+    node_order = models.IntegerField(null=True, blank=True)
+    class Meta:
+        verbose_name = 'nodes hierarchy'
+        verbose_name_plural = 'nodes hierarchy'
+        db_table = 'nodes_hierarchy'
+
+#
+# Specific nodes
+#
+class Testprojects(models.Model):
+    id = models.OneToOneField('NodesHierarchy',
+        parent_link=True, primary_key=True, db_column='id')
+    notes = models.TextField(blank=True)
+    color = models.CharField(max_length=12L)
+    active = models.IntegerField()
+    option_reqs = models.IntegerField()
+    option_priority = models.IntegerField()
+    option_automation = models.IntegerField()
+    options = models.TextField(blank=True)
+    prefix = models.CharField(max_length=16L, unique=True)
+    tc_counter = models.IntegerField()
+    is_public = models.IntegerField()
+    issue_tracker_enabled = models.IntegerField()
+    reqmgr_integration_enabled = models.IntegerField()
+    class Meta:
+        db_table = 'testprojects'
+
+class Testplans(models.Model):
+    id = models.OneToOneField('NodesHierarchy',
+        parent_link=True, primary_key=True, db_column='id')
+    testproject_id = models.IntegerField()
+    notes = models.TextField(blank=True)
+    active = models.IntegerField()
+    is_open = models.IntegerField()
+    is_public = models.IntegerField()
+    class Meta:
+        db_table = 'testplans'
+
+class Testsuites(models.Model):
+    id = models.OneToOneField('NodesHierarchy',
+        parent_link=True, primary_key=True, db_column='id')
+    details = models.TextField(blank=True)
+    class Meta:
+        db_table = 'testsuites'
+
+class Testcase(models.Model):
+    id = models.OneToOneField('NodesHierarchy',
+        parent_link=True, primary_key=True, db_column='id')
+    tc_external_id = models.IntegerField(null=True, blank=True)
+    version = models.IntegerField()
+    layout = models.IntegerField()
+    status = models.IntegerField()
+    summary = models.TextField(blank=True)
+    preconditions = models.TextField(blank=True)
+    importance = models.IntegerField()
+    author = models.ForeignKey('User', db_column='author_id', related_name='authored_testcase_set')
+    creation_ts = models.DateTimeField()
+    updater = models.ForeignKey('User', db_column='updater_id', related_name='updated_testcase_set')
+    modification_ts = models.DateTimeField()
+    active = models.IntegerField()
+    is_open = models.IntegerField()
+    execution_type = models.IntegerField()
+    class Meta:
+        db_table = 'tcversions'
+
+
+#
+# User and group management
+#
 class UserGroup(models.Model):
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100L, unique=True)
@@ -533,7 +548,6 @@ class User(models.Model):
     groups = models.ManyToManyField('UserGroup', through='UserGroupAssign')
     class Meta:
         db_table = 'users'
-
 
 #
 # Roles and Rights
