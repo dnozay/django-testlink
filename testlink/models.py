@@ -15,6 +15,8 @@ class AssignmentStatus(models.Model):
     description = models.CharField(max_length=100L)
     class Meta:
         db_table = 'assignment_status'
+    def __unicode__(self):
+        return unicode(self.description)
 
 class AssignmentTypes(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -22,6 +24,8 @@ class AssignmentTypes(models.Model):
     description = models.CharField(max_length=100L)
     class Meta:
         db_table = 'assignment_types'
+    def __unicode__(self):
+        return unicode(self.description)
 
 class Attachments(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -52,6 +56,8 @@ class Builds(models.Model):
     closed_on_date = models.DateField(null=True, blank=True)
     class Meta:
         db_table = 'builds'
+    def __unicode__(self):
+        return unicode(self.name)
 
 class CfieldDesignValues(models.Model):
     field = models.ForeignKey('CustomFields')
@@ -140,7 +146,7 @@ class ExecutionBugs(models.Model):
 
 class Executions(models.Model):
     id = models.IntegerField(primary_key=True)
-    build = models.ForeignKey('Builds')
+    build = models.ForeignKey('Builds', null=True)
     tester_id = models.IntegerField(null=True, blank=True)
     execution_ts = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=1L, blank=True)
@@ -225,6 +231,13 @@ class NodesHierarchy(models.Model):
     class Meta:
         db_table = 'nodes_hierarchy'
 
+class NodeModel(models.Model):
+    node = models.OneToOneField('NodesHierarchy', parent_link=True, db_column='id')
+    class Meta:
+        abstract = True
+    def __unicode__(self):
+        return unicode(self.node.name)
+
 class ObjectKeywords(models.Model):
     id = models.IntegerField(primary_key=True)
     fk_id = models.IntegerField()
@@ -277,8 +290,7 @@ class ReqRevisions(models.Model):
     class Meta:
         db_table = 'req_revisions'
 
-class ReqSpecs(models.Model):
-    id = models.ForeignKey('NodesHierarchy', primary_key=True, db_column='id')
+class ReqSpecs(NodeModel):
     testproject = models.ForeignKey('Testprojects')
     doc_id = models.CharField(max_length=64L)
     class Meta:
@@ -302,8 +314,7 @@ class ReqSpecsRevisions(models.Model):
     class Meta:
         db_table = 'req_specs_revisions'
 
-class ReqVersions(models.Model):
-    id = models.ForeignKey('NodesHierarchy', primary_key=True, db_column='id')
+class ReqVersions(NodeModel):
     version = models.IntegerField()
     revision = models.IntegerField()
     scope = models.TextField(blank=True)
@@ -328,8 +339,7 @@ class Reqmgrsystems(models.Model):
     class Meta:
         db_table = 'reqmgrsystems'
 
-class Requirements(models.Model):
-    id = models.ForeignKey('NodesHierarchy', primary_key=True, db_column='id')
+class Requirements(NodeModel):
     srs = models.ForeignKey('ReqSpecs')
     req_doc_id = models.CharField(max_length=64L)
     class Meta:
@@ -362,12 +372,6 @@ class Roles(models.Model):
     notes = models.TextField(blank=True)
     class Meta:
         db_table = 'roles'
-
-class NodeModel(models.Model):
-    id = models.OneToOneField('NodesHierarchy',
-        parent_link=True, primary_key=True, db_column='id')
-    class Meta:
-        abstract = True
 
 class TcasesActive(models.Model):
     tcase_id = models.IntegerField(null=True, blank=True)
@@ -422,8 +426,7 @@ class TcversionsLastActive(models.Model):
     class Meta:
         db_table = 'tcversions_last_active'
 
-class TcversionsLastActiveBareBones(models.Model):
-    tcase = models.ForeignKey('NodesHierarchy', primary_key=True, db_column='id')
+class TcversionsLastActiveBareBones(NodeModel):
     tcversion = models.ForeignKey('Tcversions')
     class Meta:
         db_table = 'tcversions_last_active_bare_bones'
@@ -562,4 +565,6 @@ class Users(models.Model):
     groups = models.ManyToManyField('UserGroup', through='UserGroupAssign')
     class Meta:
         db_table = 'users'
+    def __unicode__(self):
+        return unicode(self.login)
 
