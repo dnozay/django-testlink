@@ -45,8 +45,8 @@ class Builds(models.Model):
     name = models.CharField(max_length=100L)
     notes = models.TextField(blank=True)
     active = models.BooleanField()
-    is_open = models.IntegerField()
-    author_id = models.IntegerField(null=True, blank=True)
+    is_open = models.BooleanField()
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     release_date = models.DateField(null=True, blank=True)
     closed_on_date = models.DateField(null=True, blank=True)
@@ -219,7 +219,7 @@ class NodeTypes(models.Model):
 class NodesHierarchy(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100L, blank=True)
-    parent_id = models.IntegerField(null=True, blank=True)
+    parent = models.ForeignKey('self', null=True, related_name='children')
     node_type = models.ForeignKey('NodeTypes')
     node_order = models.IntegerField(null=True, blank=True)
     class Meta:
@@ -252,7 +252,7 @@ class ReqRelations(models.Model):
     source = models.ForeignKey('Requirements', related_name='source_reqrelations_set')
     destination = models.ForeignKey('Requirements', related_name='destination_reqrelations_set')
     relation_type = models.IntegerField()
-    author_id = models.IntegerField(null=True, blank=True)
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     class Meta:
         db_table = 'req_relations'
@@ -267,10 +267,10 @@ class ReqRevisions(models.Model):
     status = models.CharField(max_length=1L)
     type = models.CharField(max_length=1L, blank=True)
     active = models.BooleanField()
-    is_open = models.IntegerField()
+    is_open = models.BooleanField()
     expected_coverage = models.IntegerField()
     log_message = models.TextField(blank=True)
-    author_id = models.IntegerField(null=True, blank=True)
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     modifier_id = models.IntegerField(null=True, blank=True)
     modification_ts = models.DateTimeField()
@@ -295,7 +295,7 @@ class ReqSpecsRevisions(models.Model):
     status = models.IntegerField(null=True, blank=True)
     type = models.CharField(max_length=1L, blank=True)
     log_message = models.TextField(blank=True)
-    author_id = models.IntegerField(null=True, blank=True)
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     modifier_id = models.IntegerField(null=True, blank=True)
     modification_ts = models.DateTimeField()
@@ -310,9 +310,9 @@ class ReqVersions(models.Model):
     status = models.CharField(max_length=1L)
     type = models.CharField(max_length=1L, blank=True)
     active = models.BooleanField()
-    is_open = models.IntegerField()
+    is_open = models.BooleanField()
     expected_coverage = models.IntegerField()
-    author_id = models.IntegerField(null=True, blank=True)
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     modifier_id = models.IntegerField(null=True, blank=True)
     modification_ts = models.DateTimeField()
@@ -363,15 +363,19 @@ class Roles(models.Model):
     class Meta:
         db_table = 'roles'
 
+class NodeModel(models.Model):
+    id = models.OneToOneField('NodesHierarchy',
+        parent_link=True, primary_key=True, db_column='id')
+    class Meta:
+        abstract = True
+
 class TcasesActive(models.Model):
     tcase_id = models.IntegerField(null=True, blank=True)
     tc_external_id = models.IntegerField(null=True, blank=True)
     class Meta:
         db_table = 'tcases_active'
 
-class Tcsteps(models.Model):
-    id = models.OneToOneField('NodesHierarchy',
-        parent_link=True, primary_key=True, db_column='id')
+class Tcsteps(NodeModel):
     step_number = models.IntegerField()
     actions = models.TextField(blank=True)
     expected_results = models.TextField(blank=True)
@@ -380,9 +384,7 @@ class Tcsteps(models.Model):
     class Meta:
         db_table = 'tcsteps'
 
-class Tcversions(models.Model):
-    id = models.OneToOneField('NodesHierarchy',
-        parent_link=True, primary_key=True, db_column='id')
+class Tcversions(NodeModel):
     tc_external_id = models.IntegerField(null=True, blank=True)
     version = models.IntegerField()
     layout = models.IntegerField()
@@ -390,12 +392,12 @@ class Tcversions(models.Model):
     summary = models.TextField(blank=True)
     preconditions = models.TextField(blank=True)
     importance = models.IntegerField()
-    author = models.ForeignKey('Users', null=True, blank=True, related_name='authored_tcversions_set')
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
-    updater = models.ForeignKey('Users', null=True, blank=True, related_name='updated_tcversions_set')
+    updater = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     modification_ts = models.DateTimeField()
     active = models.BooleanField()
-    is_open = models.IntegerField()
+    is_open = models.BooleanField()
     execution_type = models.IntegerField()
     class Meta:
         db_table = 'tcversions'
@@ -409,12 +411,12 @@ class TcversionsLastActive(models.Model):
     summary = models.TextField(blank=True)
     preconditions = models.TextField(blank=True)
     importance = models.IntegerField()
-    author = models.ForeignKey('Users', null=True, blank=True, related_name='authored_tcversionslastactive_set')
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
-    updater = models.ForeignKey('Users', null=True, blank=True, related_name='updated_tcversionslastactive_set')
+    updater = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     modification_ts = models.DateTimeField()
     active = models.BooleanField()
-    is_open = models.IntegerField()
+    is_open = models.BooleanField()
     execution_type = models.IntegerField()
     tcase = models.ForeignKey('NodesHierarchy')
     class Meta:
@@ -446,19 +448,17 @@ class TestplanTcversions(models.Model):
     node_order = models.IntegerField()
     urgency = models.IntegerField()
     platform_id = models.IntegerField()
-    author_id = models.IntegerField(null=True, blank=True)
+    author = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     class Meta:
         db_table = 'testplan_tcversions'
 
-class Testplans(models.Model):
-    id = models.OneToOneField('NodesHierarchy',
-        parent_link=True, primary_key=True, db_column='id')
+class Testplans(NodeModel):
     testproject_id = models.IntegerField()
     notes = models.TextField(blank=True)
     active = models.BooleanField()
-    is_open = models.IntegerField()
-    is_public = models.IntegerField()
+    is_open = models.BooleanField()
+    is_public = models.BooleanField()
     class Meta:
         db_table = 'testplans'
 
@@ -474,9 +474,7 @@ class TestprojectReqmgrsystem(models.Model):
     class Meta:
         db_table = 'testproject_reqmgrsystem'
 
-class Testprojects(models.Model):
-    id = models.OneToOneField('NodesHierarchy',
-        parent_link=True, primary_key=True, db_column='id')
+class Testprojects(NodeModel):
     notes = models.TextField(blank=True)
     color = models.CharField(max_length=12L)
     active = models.BooleanField()
@@ -486,15 +484,13 @@ class Testprojects(models.Model):
     options = models.TextField(blank=True)
     prefix = models.CharField(max_length=16L, unique=True)
     tc_counter = models.IntegerField()
-    is_public = models.IntegerField()
+    is_public = models.BooleanField()
     issue_tracker_enabled = models.IntegerField()
     reqmgr_integration_enabled = models.IntegerField()
     class Meta:
         db_table = 'testprojects'
 
-class Testsuites(models.Model):
-    id = models.OneToOneField('NodesHierarchy',
-        parent_link=True, primary_key=True, db_column='id')
+class Testsuites(NodeModel):
     details = models.TextField(blank=True)
     class Meta:
         db_table = 'testsuites'
@@ -513,10 +509,10 @@ class UserAssignments(models.Model):
     id = models.IntegerField(primary_key=True)
     type = models.IntegerField()
     feature_id = models.IntegerField()
-    user = models.ForeignKey('Users', null=True, blank=True, related_name='user_userassignments_set')
+    user = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     build = models.ForeignKey('Builds', null=True, blank=True)
     deadline_ts = models.DateTimeField(null=True, blank=True)
-    assigner = models.ForeignKey('Users', null=True, blank=True, related_name='assigner_userassignments_set')
+    assigner = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     creation_ts = models.DateTimeField()
     status = models.IntegerField(null=True, blank=True)
     class Meta:
