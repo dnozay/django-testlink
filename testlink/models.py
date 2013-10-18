@@ -145,11 +145,19 @@ class ExecutionBugs(models.Model):
         db_table = 'execution_bugs'
 
 class Executions(models.Model):
+    PASSED = 'p'
+    FAILED = 'f'
+    BLOCKED = 'b'
+    STATUS_CHOICES = (
+        (PASSED, 'passed'),
+        (FAILED, 'failed'),
+        (BLOCKED, 'blocked'),
+    )
     id = models.IntegerField(primary_key=True)
     build = models.ForeignKey('Builds', null=True)
-    tester_id = models.IntegerField(null=True, blank=True)
+    tester = models.ForeignKey('Users', null=True, blank=True, related_name='+')
     execution_ts = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=1L, blank=True)
+    status = models.CharField(max_length=1L, blank=True, choices=STATUS_CHOICES)
     testplan = models.ForeignKey('Testplans')
     tcversion = models.ForeignKey('Tcversions')
     tcversion_number = models.IntegerField()
