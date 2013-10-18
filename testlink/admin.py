@@ -1,5 +1,6 @@
 
 from django.contrib import admin
+from django import forms
 from .models import *
 
 admin.site.register(AssignmentStatus)
@@ -58,3 +59,66 @@ admin.site.register(UserGroupAssign)
 admin.site.register(UserTestplanRoles)
 admin.site.register(UserTestprojectRoles)
 admin.site.register(Users)
+
+#
+# Executions
+#
+class ExecutionsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'build_name', 'test_name', 'status',)
+    def build_name(self, obj):
+        return obj.build.name
+    def test_name(self, obj):
+        return obj.tcversion.node.parent.name
+
+admin.site.unregister(Executions)
+admin.site.register(Executions, ExecutionsAdmin)
+
+
+#
+# Nodes
+#
+class TcversionsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'tc_external_id', 'version')
+
+class NodeTypesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'description')
+
+class NodesHierarchyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'description', 'name')
+    def description(self, obj):
+        return obj.node_type.description
+
+admin.site.unregister(Tcversions)
+admin.site.unregister(NodeTypes)
+admin.site.unregister(NodesHierarchy)
+admin.site.register(Tcversions, TcversionsAdmin)
+admin.site.register(NodeTypes, NodeTypesAdmin)
+admin.site.register(NodesHierarchy, NodesHierarchyAdmin)
+
+#
+# Users and groups
+#
+class UserGroupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'description')
+
+class UserGroupAssignInlineForm(forms.ModelForm):
+    auto_id = False
+    exclude = ('id',)
+    class Meta:
+        model = Users.groups.through
+
+class UserGroupAssignInline(admin.TabularInline):
+    model = Users.groups.through
+    form = UserGroupAssignInlineForm
+
+class UsersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'login', 'email', 'active')
+    inlines = [UserGroupAssignInline,]
+
+admin.site.unregister(UserGroupAssign)
+admin.site.unregister(UserGroup)
+admin.site.unregister(Users)
+admin.site.register(UserGroup, UserGroupAdmin)
+admin.site.register(Users, UsersAdmin)
+
+
