@@ -1,0 +1,7 @@
+body {
+  padding-top: 60px;
+}
+
+.glyphicon.passed { color: #0F0; }
+.glyphicon.failed { color: #F00; }
+.glyphicon.blocked { color: #F0F; }

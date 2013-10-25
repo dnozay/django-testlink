@@ -1,0 +1,190 @@
+{% extends "testlink/base.html" %}
+{% block title %}Foobar{% endblock %}
+
+{% block content %}
+<table id="builds" class="table table-striped table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Timestamp</th>
+        <th>Executions</th>
+    </tr>
+  <tbody data-bind="foreach: builds, event: { scroll: scrolled }">
+    <tr>
+        <td data-bind="text: id"></td>
+        <td data-bind="text: name"></td>
+        <td data-bind="timeago: creation_ts"></td>
+        <td>
+        <!-- ko foreach: executions -->
+            <span data-bind="ich: { name: 'ich_executions', data: $data }"></span>
+        <!-- /ko -->
+        </td>
+    </tr>
+  </tbody>
+</table>
+
+<script id="ich_executions_tooltip" type="text/html">
+<div class="tooltip" style="display: none"><div class="tooltip-data">
+    <h3>
+        <span data-bind="text: status" />
+        <span data-bind="glyphicon: status" />
+    </h3>
+    <div data-bind="timeago: execution_ts" />
+    <span data-bind="text: id"></span>
+    <div><b>Testsuite:</b><br/>
+        <span data-bind="text: testsuite"></span>
+    </div>
+    <div><b>Testcase:</b><br/>
+        <span data-bind="text: testcase"></span>
+    </div>
+    <div><b>Notes:</b><br/>
+        <span data-bind="html: notes"></span>
+    </div>
+</div></div>
+</script>
+
+{% verbatim %}
+<script id="ich_executions" type="text/html">
+    <span data-bind="glyphicon: status">
+        {{> ich_executions_tooltip }}
+    </span>
+</script>
+{% endverbatim %}
+
+<script type="text/javascript">
+
+var TL = TL || {};
+
+TL.PagedCollection = Backbone.Collection.extend({
+    // Constructor method
+    initialize: function(data, options) {
+        this.options = options;
+        this.limit = options.limit || 20;
+        this.offset = options.offset || 0;
+        this.total = 0; // set after fetch
+        this.hasMore = false; // set after fetch
+    },
+    // return the parameters for the url
+    params: function() {
+        var p = {limit: this.limit, offset: this.offset}
+        return jQuery.param(p);
+    },
+    // parse the results from the fetch() call.
+    parse: function(resp) {
+        this.total = resp.meta.total_count;
+        this.offset = resp.meta.offset + this.limit;
+        this.hasMore = this.total > this.models.length;
+        return resp.objects;
+    }
+});
+
+// http://blog.julython.org/2013/Jan/using-tastypie-with-backbone-and-knockout/
+TL.ViewModel = function(options) {
+    this.initialize.apply(this,arguments);
+};
+_.extend(TL.ViewModel.prototype, {
+    initialize: function() {}
+});
+TL.ViewModel.extend = Backbone.View.extend;
+
+
+TL.Builds = Backbone.Model.extend({ urlRoot: '/api/v1/builds/' });
+TL.Executions = Backbone.Model.extend({ urlRoot: '/api/v1/executions/' });
+TL.Testsuites = Backbone.Model.extend({ urlRoot: '/api/v1/testsuites/' });
+
+TL.BuildsCollection = TL.PagedCollection.extend({
+    model: TL.Builds,
+    url: function() {return '/api/v1/builds/?' + this.params()}
+});
+TL.TestsuitesCollection = TL.PagedCollection.extend({
+    model: TL.Testsuites,
+    url: function() {return '/api/v1/testsuites/?' + this.params()}
+});
+TL.DashboardView = TL.ViewModel.extend({
+    initialize: function(options) {
+        var builds = new TL.BuildsCollection(null, options);
+        var testsuites = new TL.TestsuitesCollection(null, {limit: 0});
+        // prepopulate the collection
+        builds.fetch({add: true});
+        testsuites.fetch({add: true});
+        this.builds = kb.collectionObservable(builds);
+        this.testsuites = kb.collectionObservable(testsuites);
+    },
+    // bind this function to the parent div and when
+    // the element is scrolled call the fetch method when
+    // we are near the bottom.
+    // http://jsfiddle.net/rniemeyer/KdPmF/
+    scrolled: function(data, event) {
+        var elem = event.target;
+        if (elem.scrollTop > (elem.scrollHeight - elem.offsetHeight - 200)) {
+            this.fetch();
+        }
+    },
+    // Check the collection to see if there are more items to fetch
+    hasMore: function() {
+        return this.builds.collection().hasMore;
+    },
+    // Fetch more executions from the collection
+    fetch: function() {
+        if (this.hasMore()) {
+            this.builds.collection().fetch({add:true});
+        }
+    }
+});
+
+
+ko.bindingHandlers.timeago = {
+    init: function(element, valueAccessor, allBindingsAccessor) {
+        // First get the latest data that we're bound to
+        var value = valueAccessor(), allBindings = allBindingsAccessor();
+
+        // Next, whether or not the supplied model property is observable,
+        // get its current value
+        var valueUnwrapped = ko.utils.unwrapObservable(value);
+
+        // set the title attribute to the value passed
+        $(element).attr('title', valueUnwrapped);
+
+        // apply timeago to change the text of the element
+        $(element).timeago();
+    }
+};
+
+ko.bindingHandlers.ich = {
+    init: function(element, valueAccessor, allBindingsAccessor) {
+        // First get the latest data that we're bound to
+        var value = valueAccessor(), allBindings = allBindingsAccessor();
+        var valueUnwrapped = ko.utils.unwrapObservable(value);
+        $(element).html(ich[valueUnwrapped.name](valueUnwrapped.data));
+        $(element).popover({ placement: 'right',
+            html: true,
+            title: 'details',
+            trigger: 'hover',
+            content: $(element).find('.tooltip-data')
+        });
+    }
+};
+
+ko.bindingHandlers.glyphicon = {
+    init: function(element, valueAccessor, allBindingsAccessor) {
+        // First get the latest data that we're bound to
+        var value = valueAccessor(), allBindings = allBindingsAccessor();
+
+        // Next, whether or not the supplied model property is observable,
+        // get its current value
+        var valueUnwrapped = ko.utils.unwrapObservable(value);
+        var glyphclasses = {
+            passed: 'passed glyphicon glyphicon-ok',
+            failed: 'failed glyphicon glyphicon-remove',
+            blocked: 'blocked glyphicon glyphicon-ban-circle'
+        }
+        $(element).addClass(glyphclasses[valueUnwrapped]);
+
+    }
+};
+
+var view = new TL.DashboardView({});
+ko.applyBindings(view);
+
+</script>
+{% endblock %}

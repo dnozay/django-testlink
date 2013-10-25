@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ STATIC_URL }}js/bootstrap/resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}base.css" rel="stylesheet" media="screen">
+    <script src="{{ STATIC_URL }}js/jquery/resources/jquery.min.js"></script>
+    <script src="{{ STATIC_URL }}js/underscore/resources/underscore-min.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap/resources/js/bootstrap.min.js"></script>
+    <script src="{{ STATIC_URL }}js/backbone/resources/backbone-min.js"></script>
+    <script src="{{ STATIC_URL }}js/icanhaz/resources/ICanHaz.min.js"></script>
+    <script src="{{ STATIC_URL }}js/knockout/resources/knockout.js"></script>
+    <script src="{{ STATIC_URL }}js/knockback/resources/knockback.min.js"></script>
+    <script src="{{ STATIC_URL }}js/jquery_timeago/resources/jquery.timeago.js"></script>
+{% block header %}{% endblock %}
+  </head>
+  <body>
+{% block body %}
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Testlink reports</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+{% block content %}{% endblock %}
+    </div>
+{% endblock %}
+  </body>
+</html>

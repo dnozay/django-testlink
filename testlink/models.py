@@ -166,6 +166,10 @@ class Executions(models.Model):
     notes = models.TextField(blank=True)
     class Meta:
         db_table = 'executions'
+    def _get_testcase_name(self):
+        return self.tcversion.node.parent.name
+    def _get_testsuite_name(self):
+        return self.tcversion.node.parent.parent.name
 
 class Inventory(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -413,6 +417,8 @@ class Tcversions(NodeModel):
     execution_type = models.IntegerField()
     class Meta:
         db_table = 'tcversions'
+    def __unicode__(self):
+        return unicode(self.node.parent.name)
 
 class TcversionsLastActive(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -505,6 +511,8 @@ class Testsuites(NodeModel):
     details = models.TextField(blank=True)
     class Meta:
         db_table = 'testsuites'
+    def _get_name(self):
+        return self.node.name
 
 class Transactions(models.Model):
     id = models.IntegerField(primary_key=True)
