@@ -478,6 +478,8 @@ class Testplans(NodeModel):
     is_public = models.BooleanField()
     class Meta:
         db_table = 'testplans'
+    def _get_name(self):
+        return self.node.name
 
 class TestprojectIssuetracker(models.Model):
     testproject = models.ForeignKey('Testprojects', primary_key=True, db_column='id')

@@ -2,6 +2,9 @@
 {% block title %}Foobar{% endblock %}
 
 {% block content %}
+
+<select data-bind="options: testplans, optionsText: 'name', value: selectedTestplan"></select>
+
 <table id="builds" class="table table-striped table-bordered">
     <tr>
         <th>ID</th>
@@ -95,11 +98,22 @@ TL.ViewModel.extend = Backbone.View.extend;
 
 TL.Builds = Backbone.Model.extend({ urlRoot: '/api/v1/builds/' });
 TL.Executions = Backbone.Model.extend({ urlRoot: '/api/v1/executions/' });
+TL.Testplans = Backbone.Model.extend({ urlRoot: '/api/v1/testplans/' });
 TL.Testsuites = Backbone.Model.extend({ urlRoot: '/api/v1/testsuites/' });
 
 TL.BuildsCollection = TL.PagedCollection.extend({
     model: TL.Builds,
-    url: function() {return '/api/v1/builds/?' + this.params()}
+    url: function() {return '/api/v1/builds/?' + this.params()},
+    // return the parameters for the url
+    params: function() {
+        var p = {limit: this.limit, offset: this.offset}
+        if (this.options['testplan_id']) { p.testplan_id = this.options.testplan_id; }
+        return jQuery.param(p);
+    },
+});
+TL.TestplansCollection = TL.PagedCollection.extend({
+    model: TL.Testplans,
+    url: function() {return '/api/v1/testplans/?' + this.params()}
 });
 TL.TestsuitesCollection = TL.PagedCollection.extend({
     model: TL.Testsuites,
@@ -107,13 +121,30 @@ TL.TestsuitesCollection = TL.PagedCollection.extend({
 });
 TL.DashboardView = TL.ViewModel.extend({
     initialize: function(options) {
-        var builds = new TL.BuildsCollection(null, {limit: 10});
-        var testsuites = new TL.TestsuitesCollection(null, {limit: 0});
+        var testplans = new TL.TestplansCollection(null, {});
+        var builds = new Backbone.Collection([]);
+        var testsuites = new TL.TestsuitesCollection(null, {});
+
         // prepopulate the collection
-        builds.fetch({add: true});
+        testplans.fetch({add: true});
         testsuites.fetch({add: true});
-        this.builds = kb.collectionObservable(builds);
-        this.testsuites = kb.collectionObservable(testsuites);
+
+        var descending_ids = function(item_a, item_b) {
+            var id_a = ko.utils.unwrapObservable(item_a.id);
+            var id_b = ko.utils.unwrapObservable(item_b.id);
+            return id_b - id_a;
+        };
+        this.testplans = kb.collectionObservable(testplans, {sort_attribute: 'id'});
+        this.builds = kb.collectionObservable(builds, {comparator: descending_ids});
+        this.testsuites = kb.collectionObservable(testsuites, {sort_attribute: 'id'});
+
+        this.selectedTestplan = ko.observable();
+        this.selectedTestplan.subscribe(function(newValue) {
+            var testplan_id = ko.utils.unwrapObservable(newValue.id);
+            var builds = new TL.BuildsCollection(null, {testplan_id: testplan_id});
+            builds.fetch();
+            this.builds.collection(builds);
+        }, this);
     },
     // bind this function to the parent div and when
     // the element is scrolled call the fetch method when
