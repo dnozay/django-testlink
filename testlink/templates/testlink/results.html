@@ -7,21 +7,26 @@
         <th>ID</th>
         <th>Name</th>
         <th>Timestamp</th>
-        <th>Executions</th>
+        <!-- ko foreach: testsuites -->
+        <th data-bind="text: name"></th>
+        <!-- /ko -->
     </tr>
   <tbody data-bind="foreach: builds, event: { scroll: scrolled }">
     <tr>
         <td data-bind="text: id"></td>
         <td data-bind="text: name"></td>
         <td data-bind="timeago: creation_ts"></td>
+        <!-- ko foreach: { data: $root.testsuites, as: 'testsuite' } -->
         <td>
-        <!-- ko foreach: executions -->
-            <span data-bind="ich: { name: 'ich_executions', data: $data }"></span>
-        <!-- /ko -->
+            <!-- ko foreach: $parent.executions.filter('testsuite', testsuite.name) -->
+                <span data-bind="ich: { name: 'ich_executions', data: $data }"></span>
+            <!-- /ko -->
         </td>
+        <!-- /ko -->
     </tr>
   </tbody>
 </table>
+<div data-bind="event: { scroll: scrolled }" />
 
 <script id="ich_executions_tooltip" type="text/html">
 <div class="tooltip" style="display: none"><div class="tooltip-data">
@@ -102,7 +107,7 @@ TL.TestsuitesCollection = TL.PagedCollection.extend({
 });
 TL.DashboardView = TL.ViewModel.extend({
     initialize: function(options) {
-        var builds = new TL.BuildsCollection(null, options);
+        var builds = new TL.BuildsCollection(null, {limit: 10});
         var testsuites = new TL.TestsuitesCollection(null, {limit: 0});
         // prepopulate the collection
         builds.fetch({add: true});
@@ -116,6 +121,7 @@ TL.DashboardView = TL.ViewModel.extend({
     // http://jsfiddle.net/rniemeyer/KdPmF/
     scrolled: function(data, event) {
         var elem = event.target;
+        console.log('scrolled');
         if (elem.scrollTop > (elem.scrollHeight - elem.offsetHeight - 200)) {
             this.fetch();
         }
@@ -127,6 +133,7 @@ TL.DashboardView = TL.ViewModel.extend({
     // Fetch more executions from the collection
     fetch: function() {
         if (this.hasMore()) {
+            console.log('fetch');
             this.builds.collection().fetch({add:true});
         }
     }
@@ -148,6 +155,16 @@ ko.bindingHandlers.timeago = {
         // apply timeago to change the text of the element
         $(element).timeago();
     }
+};
+
+ko.dependentObservable.fn.filter = function(prop, value) {
+    var target = this;
+    var items = ko.utils.unwrapObservable(target);
+    var valueUnwrapped = ko.utils.unwrapObservable(value);
+    return ko.observableArray(
+        ko.utils.arrayFilter(items, function(item) {
+        return item[prop] === valueUnwrapped;
+    }));
 };
 
 ko.bindingHandlers.ich = {
